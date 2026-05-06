@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Screen Specifications — PRD §9</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:        #0D0D0B;
+  --bg2:       #141412;
+  --bg3:       #1C1C19;
+  --border:    rgba(255,255,255,.07);
+  --border-md: rgba(255,255,255,.11);
+  --ink:       #EDEAE2;
+  --muted:     #7A776F;
+  --faint:     #3A3834;
+  --blue:      #4A9EFF;
+  --blue-bg:   rgba(74,158,255,.08);
+  --green:     #3ECF8E;
+  --green-bg:  rgba(62,207,142,.08);
+  --amber:     #F5A524;
+  --amber-bg:  rgba(245,165,36,.08);
+  --user-tag:  rgba(74,158,255,.15);
+  --admin-tag: rgba(245,165,36,.15);
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  font-family:'Sora',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+  padding:0;
+}
+
+/* Grain overlay */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:0;
+  opacity:.6;
+}
+
+.page{
+  max-width:880px;
+  margin:0 auto;
+  padding:64px 40px 96px;
+  position:relative;
+  z-index:1;
+}
+
+/* ── Header ── */
+.header{
+  margin-bottom:64px;
+  padding-bottom:48px;
+  border-bottom:1px solid var(--border);
+}
+
+.pre-label{
+  font-family:'DM Mono',monospace;
+  font-size:10px;
+  letter-spacing:.18em;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin-bottom:20px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.pre-label::before{
+  content:'';
+  width:24px;height:1px;
+  background:var(--faint);
+}
+
+.hero-title{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(36px,6vw,58px);
+  line-height:1.05;
+  letter-spacing:-.02em;
+  color:var(--ink);
+  margin-bottom:20px;
+}
+.hero-title em{
+  font-style:italic;
+  color:var(--muted);
+}
+
+.hero-meta{
+  display:flex;
+  align-items:center;
+  gap:0;
+  flex-wrap:wrap;
+}
+.meta-pill{
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+  padding:5px 14px;
+  border:1px solid var(--border);
+  border-radius:100px;
+  margin-right:8px;
+  margin-top:8px;
+}
+
+/* ── Screen cards ── */
+.screens{display:flex;flex-direction:column;gap:12px}
+
+.card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  transition:border-color .2s;
+}
+.card:hover{border-color:var(--border-md)}
+
+.card-head{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:20px;
+  padding:20px 24px;
+  cursor:pointer;
+  user-select:none;
+}
+
+.s-num{
+  font-family:'Instrument Serif',serif;
+  font-style:italic;
+  font-size:32px;
+  line-height:1;
+  color:var(--faint);
+  min-width:42px;
+  text-align:center;
+  transition:color .2s;
+}
+.card:hover .s-num{color:var(--muted)}
+
+.s-meta{display:flex;flex-direction:column;gap:5px}
+.s-name{
+  font-size:14px;
+  font-weight:500;
+  color:var(--ink);
+  letter-spacing:-.01em;
+}
+
+.s-tags{display:flex;align-items:center;gap:6px}
+.tag{
+  font-family:'DM Mono',monospace;
+  font-size:9px;
+  letter-spacing:.06em;
+  font-weight:500;
+  padding:2px 8px;
+  border-radius:4px;
+  text-transform:uppercase;
+}
+.tag-user{background:var(--user-tag);color:var(--blue)}
+.tag-admin{background:var(--admin-tag);color:var(--amber)}
+
+.chevron{
+  color:var(--faint);
+  font-size:11px;
+  transition:transform .25s ease, color .2s;
+  flex-shrink:0;
+}
+.card.open .chevron{transform:rotate(90deg);color:var(--muted)}
+
+/* Card body */
+.card-body{
+  display:none;
+  border-top:1px solid var(--border);
+}
+.card.open .card-body{display:grid;grid-template-columns:1fr 1fr 1fr}
+
+.spec{
+  padding:20px 22px;
+  border-right:1px solid var(--border);
+}
+.spec:last-child{border-right:none}
+
+.spec-label{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-family:'DM Mono',monospace;
+  font-size:9px;
+  letter-spacing:.1em;
+  font-weight:500;
+  text-transform:uppercase;
+  margin-bottom:12px;
+}
+.spec-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+.el .spec-label{color:var(--blue)}
+.el .spec-dot{background:var(--blue)}
+.el{background:var(--blue-bg)}
+
+.ac .spec-label{color:var(--green)}
+.ac .spec-dot{background:var(--green)}
+.ac{background:var(--green-bg)}
+
+.cr .spec-label{color:var(--amber)}
+.cr .spec-dot{background:var(--amber)}
+.cr{background:var(--amber-bg)}
+
+.spec-list{
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.spec-list li{
+  font-size:12px;
+  line-height:1.6;
+  color:#9E9B94;
+  padding-left:12px;
+  position:relative;
+}
+.spec-list li::before{
+  content:'';
+  position:absolute;
+  left:0;top:8px;
+  width:3px;height:3px;
+  border-radius:50%;
+  background:var(--faint);
+}
+
+code{
+  font-family:'DM Mono',monospace;
+  font-size:10.5px;
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--border);
+  border-radius:3px;
+  padding:1px 5px;
+  color:var(--ink);
+}
+
+/* Animations */
+.card{
+  opacity:0;
+  transform:translateY(12px);
+  animation:rise .4s ease forwards;
+}
+.card:nth-child(1){animation-delay:.0s}
+.card:nth-child(2){animation-delay:.05s}
+.card:nth-child(3){animation-delay:.10s}
+.card:nth-child(4){animation-delay:.15s}
+.card:nth-child(5){animation-delay:.20s}
+.card:nth-child(6){animation-delay:.25s}
+.card:nth-child(7){animation-delay:.30s}
+.card:nth-child(8){animation-delay:.35s}
+.card:nth-child(9){animation-delay:.40s}
+
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+
+/* Responsive */
+@media(max-width:680px){
+  .page{padding:40px 20px 64px}
+  .card.open .card-body{grid-template-columns:1fr}
+  .spec{border-right:none;border-bottom:1px solid var(--border)}
+  .spec:last-child{border-bottom:none}
+  .hero-title{font-size:32px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="pre-label">Product Requirements Document &nbsp;·&nbsp; Section 9</div>
+    <h1 class="hero-title">Screen-by-Screen<br><em>Specifications</em></h1>
+    <div class="hero-meta">
+      <span class="meta-pill">9 screens</span>
+      <span class="meta-pill">7 user-facing &nbsp;·&nbsp; 2 admin</span>
+      <span class="meta-pill">Elements &nbsp;·&nbsp; Actions &nbsp;·&nbsp; Acceptance Criteria</span>
+    </div>
+  </div>
+
+  <div class="screens">
+
+    <!-- S01 -->
+    <div class="card open" onclick="toggle(this)">
+      <div class="card-head">
+        <div class="s-num">01</div>
+        <div class="s-meta">
+          <div class="s-name">Landing Page</div>
+          <div class="s-tags"><span class="tag tag-user">User-facing</span></div>
+        </div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="spec el">
+          <div class="spec-label"><span class="spec-dot"></span>Elements</div>
+          <ul class="spec-list">
+            <li>Headline + subheadline in plain language</li>
+            <li>Live anonymised earnings ticker</li>
+            <li>3-step "how it works" section</li>
+            <li>Payout SLA badge</li>
+            <li>"Start Earning" CTA above the fold</li>
+            <li>FAQ anchor link</li>
+          </ul>
+        </div>
+        <div class="spec ac">
+          <div class="spec-label"><span class="spec-dot"></span>Actions</div>
+          <ul class="spec-list">
+            <li>"Start Earning" triggers Google OAuth</li>
+            <li>Returning users redirect to dashboard automatically</li>
+          </ul>
+        </div>
+        <div class="spec cr">
+          <div class="spec-label"><span class="spec-dot"></span>Criteria</div>
+          <ul class="spec-list">
+            <li>LCP under 2 seconds</li>
+            <li>Ticker refreshes every 30s from real ledger</li>
+            <li>CTA visible without scrolling at 375px width</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- S02 -->
+    <div class="card" onclick="toggle(this)">
+      <div class="card-head">
+        <div class="s-num">02</div>
+        <div class="s-meta">
+          <div class="s-name">Google OAuth / Sign-Up</div>
+          <div class="s-tags"><span class="tag tag-user">User-facing</span></div>
+        </div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="spec el">
+          <div class="spec-label"><span class="spec-dot"></span>Elements</div>
+          <ul class="spec-list">
+            <li>Google OAuth popup via NextAuth.js</li>
+            <li>No custom form fields</li>
+          </ul>
+        </div>
+        <div class="spec ac">
+          <div class="spec-label"><span class="spec-dot"></span>Actions</div>
+          <ul class="spec-list">
+            <li>Select Google account</li>
+            <li>Approve required permissions</li>
+          </ul>
+        </div>
+        <div class="spec cr">
+          <div class="spec-label"><span class="spec-dot"></span>Criteria</div>
+          <ul class="spec-list">
+            <li>New user record created under 500ms</li>
+            <li>Device fingerprint captured on page load</li>
+            <li>First-timers → tutorial · returning → dashboard</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- S03 -->
+    <div class="card" onclick="toggle(this)">
+      <div class="card-head">
+        <div class="s-num">03</div>
+        <div class="s-meta">
+          <div class="s-name">Sandbox Tutorial</div>
+          <div class="s-tags"><span class="tag tag-user">User-facing</span></div>
+        </div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="spec el">
+          <div class="spec-label"><span class="spec-dot"></span>Elements</div>
+          <ul class="spec-list">
+            <li>3-step guided overlay</li>
+            <li>Simulated task card + fake URL input</li>
+            <li>Tooltips at each step</li>
+            <li>Progress indicator</li>
+            <li>"Complete Tutorial" button on step 3</li>
+          </ul>
+        </div>
+        <div class="spec ac">
+          <div class="spec-label"><span class="spec-dot"></span>Actions</div>
+          <ul class="spec-list">
+            <li>Follow guided steps</li>
+            <li>Paste a practice URL</li>
+          </ul>
+        </div>
+        <div class="spec cr">
+          <div class="spec-label"><span class="spec-dot"></span>Criteria</div>
+          <ul class="spec-list">
+            <li>Dashboard route-guarded until <code>tutorial_completed = true</code></li>
+            <li>Cannot be skipped</li>
+            <li>Renders correctly at 320px min width</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- S04 -->
+    <div class="card" onclick="toggle(this)">
+      <div class="card-head">
+        <div class="s-num">04</div>
+        <div class="s-meta">
+          <div class="s-name">Main Dashboard</div>
+          <div class="s-tags"><span class="tag tag-user">User-facing</span></div>
+        </div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="spec el">
+          <div class="spec-label"><span class="spec-dot"></span>Elements</div>
+          <ul class="spec-list">
+            <li>Wallet summary card (Pending, Available, Lifetime)</li>
+            <li>Queue of 5 task cards with type, payout, est. time</li>
+            <li>"Accept Task" CTA per card</li>
+            <li>"Refresh Queue" button</li>
+            <li>Tasks completed today counter</li>
+          </ul>
+        </div>
+        <div class="spec ac">
+          <div class="spec-label"><span class="spec-dot"></span>Actions</div>
+          <ul class="spec-list">
+            <li>"Accept Task" → Redis lock + opens Task Detail</li>
+            <li>"Refresh Queue" → fetches a new batch</li>
+            <li>Wallet card → opens Wallet screen</li>
+          </ul>
+        </div>
+        <div class="spec cr">
+          <div class="spec-label"><span class="spec-dot"></span>Criteria</div>
+          <ul class="spec-list">
+            <li>Queue loads in under 1 second</li>
+            <li>Taken slot shows toast, card swaps without full reload</li>
+            <li>Minimum 48px tap targets on mobile</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- S05 -->
+    <div class="card" onclick="toggle(this)">
+      <div class="card-head">
+        <div class="s-num">05</div>
+        <div class="s-meta">
+          <div class="s-name">Task Detail</div>
+          <div class="s-tags"><span class="tag tag-user">User-facing</span></div>
+        </div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="spec el">
+          <div class="spec-label"><span class="spec-dot"></span>Elements</div>
+          <ul class="spec-list">
+            <li>Full task instructions as formatted HTML</li>
+            <li>Required keyword highlighted inline</li>
+            <li>Target URL + payout amount</li>
+            <li>Lock countdown synced to server TTL</li>
+            <li>"Submit Proof" CTA + "Return to Queue" button</li>
+          </ul>
+        </div>
+        <div class="spec ac">
+          <div class="spec-label"><span class="spec-dot"></span>Actions</div>
+          <ul class="spec-list">
+            <li>"Submit Proof" opens Submission screen</li>
+            <li>"Return to Queue" releases Redis lock via API</li>
+          </ul>
+        </div>
+        <div class="spec cr">
+          <div class="spec-label"><span class="spec-dot"></span>Criteria</div>
+          <ul class="spec-list">
+            <li>Countdown is server-synced, not client-computed</li>
+            <li>Instructions rendered as formatted HTML</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- S06 -->
+    <div class="card" onclick="toggle(this)">
+      <div class="card-head">
+        <div class="s-num">06</div>
+        <div class="s-meta">
+          <div class="s-name">Task Submission</div>
+          <div class="s-tags"><span class="tag tag-user">User-facing</span></div>
+        </div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="spec el">
+          <div class="spec-label"><span class="spec-dot"></span>Elements</div>
+          <ul class="spec-list">
+            <li>URL input with inline format validation</li>
+            <li>Helper text below input</li>
+            <li>"Submit" disabled until format passes</li>
+            <li>Async URL preview thumbnail</li>
+            <li>Resubmission note shown on retries</li>
+          </ul>
+        </div>
+        <div class="spec ac">
+          <div class="spec-label"><span class="spec-dot"></span>Actions</div>
+          <ul class="spec-list">
+            <li>Paste URL → instant client-side regex</li>
+            <li>"Submit" → triggers async 4-tier validation</li>
+          </ul>
+        </div>
+        <div class="spec cr">
+          <div class="spec-label"><span class="spec-dot"></span>Criteria</div>
+          <ul class="spec-list">
+            <li>API returns <code>200 OK / SUBMITTED</code> under 500ms</li>
+            <li>Result polled every 5s for up to 60 seconds</li>
+            <li>After 60s → "Still processing — check History shortly"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- S07 -->
+    <div class="card" onclick="toggle(this)">
+      <div class="card-head">
+        <div class="s-num">07</div>
+        <div class="s-meta">
+          <div class="s-name">Wallet</div>
+          <div class="s-tags"><span class="tag tag-user">User-facing</span></div>
+        </div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="spec el">
+          <div class="spec-label"><span class="spec-dot"></span>Elements</div>
+          <ul class="spec-list">
+            <li>Available balance (prominent display)</li>
+            <li>Pending balance in muted style with 24h-hold tooltip</li>
+            <li>Lifetime earnings total</li>
+            <li>Transaction history paginated at 10 per page</li>
+            <li>"Withdraw" disabled + tooltip when under $10</li>
+          </ul>
+        </div>
+        <div class="spec ac">
+          <div class="spec-label"><span class="spec-dot"></span>Actions</div>
+          <ul class="spec-list">
+            <li>"Withdraw" opens withdrawal flow</li>
+            <li>Tapping a transaction opens detail modal</li>
+          </ul>
+        </div>
+        <div class="spec cr">
+          <div class="spec-label"><span class="spec-dot"></span>Criteria</div>
+          <ul class="spec-list">
+            <li>Ledger query renders under 200ms</li>
+            <li>Pending and Available visually distinct at a glance</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- S08 -->
+    <div class="card" onclick="toggle(this)">
+      <div class="card-head">
+        <div class="s-num">08</div>
+        <div class="s-meta">
+          <div class="s-name">Admin Task Upload</div>
+          <div class="s-tags"><span class="tag tag-admin">Admin</span></div>
+        </div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="spec el">
+          <div class="spec-label"><span class="spec-dot"></span>Elements</div>
+          <ul class="spec-list">
+            <li>CSV drag-and-drop zone</li>
+            <li>Template download link</li>
+            <li>Parsed preview table with error rows highlighted</li>
+            <li>Visibility settings (Active / Scheduled + date picker)</li>
+            <li>"Publish Tasks" CTA</li>
+          </ul>
+        </div>
+        <div class="spec ac">
+          <div class="spec-label"><span class="spec-dot"></span>Actions</div>
+          <ul class="spec-list">
+            <li>Upload CSV → review errors → set schedule → publish</li>
+          </ul>
+        </div>
+        <div class="spec cr">
+          <div class="spec-label"><span class="spec-dot"></span>Criteria</div>
+          <ul class="spec-list">
+            <li>CSVs over 500 rows run as background job with email confirm</li>
+            <li>Error rows show specific column + reason</li>
+            <li>Publish is atomic — all or nothing</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- S09 -->
+    <div class="card" onclick="toggle(this)">
+      <div class="card-head">
+        <div class="s-num">09</div>
+        <div class="s-meta">
+          <div class="s-name">Admin Monitoring Dashboard</div>
+          <div class="s-tags"><span class="tag tag-admin">Admin</span></div>
+        </div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="spec el">
+          <div class="spec-label"><span class="spec-dot"></span>Elements</div>
+          <ul class="spec-list">
+            <li>KPI cards — tasks today, pass rate, payout queue, active users</li>
+            <li>7-day completion trend chart</li>
+            <li>Flagged users table (fraud score + signal breakdown)</li>
+            <li>Dispute queue + payout status table</li>
+          </ul>
+        </div>
+        <div class="spec ac">
+          <div class="spec-label"><span class="spec-dot"></span>Actions</div>
+          <ul class="spec-list">
+            <li>Click flagged user → full history + signal log</li>
+            <li>Resolve dispute → one-click approve or reject</li>
+            <li>Manually retry a failed payout</li>
+          </ul>
+        </div>
+        <div class="spec cr">
+          <div class="spec-label"><span class="spec-dot"></span>Criteria</div>
+          <ul class="spec-list">
+            <li>Auto-refreshes every 60 seconds</li>
+            <li>Ban requires mandatory reason field before confirming</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggle(card){
+  card.classList.toggle('open');
+}
+</script>
+</body>
+</html>
